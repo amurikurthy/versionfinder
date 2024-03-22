@@ -17,22 +17,21 @@ def check_ip_address(ip, progress_callback,  username, password):
         progress_callback()
         guesser = SSHDetect(**ip_dict)
         best_match = guesser.autodetect()
-        if best_match == "cisco_nxos":
-            ip_dict["device_type"] = "nxos_ssh"
-        elif best_match == "cisco_ios":
-            ip_dict["device_type"] = "ios"
-
+        ip_dict["device_type"] = best_match
             
         if ip_dict["device_type"] != "autodetect":
-            driver = get_network_driver(ip_dict["device_type"])
-            device = driver(ip_dict["host"], username, password, optional_args={'port': 22})
-            device.open()
-            device_facts = device.get_facts()
-            device_facts.pop("interface_list")
-            device_facts["ip_address"] = ip
-            device.close()
+            net_connect = ConnectHandler(**ip_dict)
+            serial_number = None
+            show_version = net_connect.send_command('show version', use_textfsm=True)[0]
+            net_connect.disconnect()
+            device_info = {}
+            device_info["serial"] = show_version["serial"]
+            device_info["platform"] = show_version["platform"]
+            device_info["hostname"] = show_version["hostname"]
+            device_info["os"] = show_version["os"]
+            device_info["IP address"] = ip
             progress_callback()
-            return device_facts
+            return device_info
         else:
             print("\nUnknown OS Skipping...")
         
@@ -41,6 +40,7 @@ def check_ip_address(ip, progress_callback,  username, password):
         return False
         
     except Exception as e:
+        print(e)
         pass
 
     
