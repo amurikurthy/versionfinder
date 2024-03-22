@@ -1,18 +1,16 @@
-import subprocess
-
-def ping_host(host):
+def is_port_open(host, port):
     """
-    Ping a host and return True if the host is reachable, False otherwise.
-    """
-    # Use the ping command with count 1
-    result = subprocess.run(['ping', '-c', '1', host], capture_output=True, text=True)
+    Check if a port is open on a remote host using netcat (nc) command.
     
-    # Check the return code to determine if the ping was successful
-    return result.returncode == 0
+    Args:
+        host (str): The hostname or IP address of the remote host.
+        port (int): The port number to check.
 
-# Example usage:
-host = 'google.com'
-if ping_host(host):
-    print(f"{host} is reachable.")
-else:
-    print(f"{host} is unreachable.")
+    Returns:
+        bool: True if the port is open, False otherwise.
+    """
+    # Use the nc command to attempt a connection to the host and port
+    result = subprocess.run(['nc', '-z', '-v', '-w', '2', host, str(port)], capture_output=True, text=True)
+    
+    # Check the return code to determine if the port is open
+    return result.returncode == 0
