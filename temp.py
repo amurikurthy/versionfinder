@@ -1,16 +1,13 @@
-def is_port_open(host, port):
-    """
-    Check if a port is open on a remote host using netcat (nc) command.
-    
-    Args:
-        host (str): The hostname or IP address of the remote host.
-        port (int): The port number to check.
+def guess_os(ip_address):
+    try:
+        # Run p0f and capture its output
+        result = subprocess.run(['p0f', '-r', '-', '-s', '-f', '/path/to/p0f.fp', ip_address], capture_output=True, text=True)
 
-    Returns:
-        bool: True if the port is open, False otherwise.
-    """
-    # Use the nc command to attempt a connection to the host and port
-    result = subprocess.run(['nc', '-z', '-v', '-w', '2', host, str(port)], capture_output=True, text=True)
-    
-    # Check the return code to determine if the port is open
-    return result.returncode == 0
+        # Check if p0f command succeeded
+        if result.returncode == 0:
+            return result.stdout.strip()
+        else:
+            return f"Failed to guess OS. Error: {result.stderr.strip()}"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
