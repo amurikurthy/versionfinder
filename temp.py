@@ -1,13 +1,25 @@
-def guess_os(ip_address):
-    try:
-        # Run p0f and capture its output
-        result = subprocess.run(['p0f', '-r', '-', '-s', '-f', '/path/to/p0f.fp', ip_address], capture_output=True, text=True)
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-        # Check if p0f command succeeded
-        if result.returncode == 0:
-            return result.stdout.strip()
-        else:
-            return f"Failed to guess OS. Error: {result.stderr.strip()}"
+# Start a new browser session
+driver = webdriver.Chrome()  # or any other webdriver you prefer, e.g., Firefox, Edge, etc.
 
-    except Exception as e:
-        return f"An error occurred: {e}"
+# Open a webpage
+driver.get("https://example.com")
+
+try:
+    # Wait for the element to be clickable (you can change the timeout as needed)
+    element = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//*[@id='your_element_id']"))
+    )
+    
+    # Once the element is clickable, click it
+    element.click()
+    
+    # You can perform further actions after clicking the element
+    
+finally:
+    # Close the browser session
+    driver.quit()
