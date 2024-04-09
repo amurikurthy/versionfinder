@@ -1,25 +1,37 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from netmiko import ConnectHandler
+import difflib
 
-# Start a new browser session
-driver = webdriver.Chrome()  # or any other webdriver you prefer, e.g., Firefox, Edge, etc.
+# Device information
+device = {
+    "device_type": "cisco_ios",
+    "host": "your_device_ip",
+    "username": "your_username",
+    "password": "your_password",
+}
 
-# Open a webpage
-driver.get("https://example.com")
+# Connect to the device
+net_connect = ConnectHandler(**device)
+net_connect.enable()
 
-try:
-    # Wait for the element to be clickable (you can change the timeout as needed)
-    element = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//*[@id='your_element_id']"))
-    )
-    
-    # Once the element is clickable, click it
-    element.click()
-    
-    # You can perform further actions after clicking the element
-    
-finally:
-    # Close the browser session
-    driver.quit()
+# Get the running configuration
+running_config = net_connect.send_command("show running-config")
+
+# Get the startup configuration
+startup_config = net_connect.send_command("show startup-config")
+
+# Close the connection
+net_connect.disconnect()
+
+# Split configurations into lines
+running_lines = running_config.splitlines()
+startup_lines = startup_config.splitlines()
+
+# Add labels to each set of lines
+running_labeled = [f'- Running: {line}' for line in running_lines]
+startup_labeled = [f'+ Startup: {line}' for line in startup_lines]
+
+# Compare the configurations
+diff = difflib.unified_diff(running_labeled, startup_labeled, lineterm='')
+
+# Print the differences
+print('\n'.join(diff))
