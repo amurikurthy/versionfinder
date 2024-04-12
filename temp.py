@@ -1,37 +1,12 @@
-from netmiko import ConnectHandler
-import difflib
-
-# Device information
-device = {
-    "device_type": "cisco_ios",
-    "host": "your_device_ip",
-    "username": "your_username",
-    "password": "your_password",
-}
-
-# Connect to the device
-net_connect = ConnectHandler(**device)
-net_connect.enable()
-
-# Get the running configuration
-running_config = net_connect.send_command("show running-config")
-
-# Get the startup configuration
-startup_config = net_connect.send_command("show startup-config")
-
-# Close the connection
-net_connect.disconnect()
-
-# Split configurations into lines
-running_lines = running_config.splitlines()
-startup_lines = startup_config.splitlines()
-
-# Add labels to each set of lines
-running_labeled = [f'- Running: {line}' for line in running_lines]
-startup_labeled = [f'+ Startup: {line}' for line in startup_lines]
-
-# Compare the configurations
-diff = difflib.unified_diff(running_labeled, startup_labeled, lineterm='')
-
-# Print the differences
-print('\n'.join(diff))
+10.3.0.0/16
+10.6.0.0/16
+10.7.0.0/16
+10.10.0.0/16
+10.11.0.0/16
+10.16.0.0/16
+10.27.3.0/24
+10.150.0.0/16
+170.217.253.0/24
+172.16.0.0/16
+172.30.0.0/16
+172.31.0.0/16
