@@ -1,31 +1,26 @@
 import paramiko
-import socket
+import sys
 
-def get_ssh_host_key(host, port=22, timeout=10):
+def get_ssh_key_info(hostname, port=22):
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.WarningPolicy())
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     try:
-        client.connect(hostname=host, port=port, username='dummy', password='dummy', timeout=timeout, allow_agent=False, look_for_keys=False)
-    except paramiko.ssh_exception.SSHException as e:
-        if "No authentication methods available" in str(e) or "Authentication failed." in str(e):
-            key = client.get_transport().get_remote_server_key()
-            return host, key.get_name(), key.get_bits()
-    except (socket.timeout, socket.error):
-        return host, 'Connection Failed', None
-    finally:
-        client.close()
+        client.connect(hostname, port=port, username='username', password='password', look_for_keys=False, allow_agent=False)
+    except Exception as e:
+        print(f"Failed to connect to {hostname}: {str(e)}")
+        return
 
-    return host, None, None
-
-# List of hosts to check
-hosts = ['192.168.1.1', '192.168.1.2', 'example.com']  # Replace or extend with your actual host list
-
-# Collect key info from each host
-for host in hosts:
-    ip, algorithm, key_size = get_ssh_host_key(host)
-    if algorithm:
-        print(f"Host: {ip}, Key Algorithm: {algorithm}, Key Size: {key_size} bits")
+    # Retrieve the host key and print information about each available key
+    host_keys = client.get_host_keys()
+    if hostname in host_keys:
+        for key_type, key in host_keys[hostname].items():
+            print(f"Host Key Type: {key.get_name()}")
+            print(f"Key Size: {key.get_bits()} bits")
     else:
-        print(f"Host: {ip}, Error: {key_size}")
+        print("No host key found.")
 
+    client.close()
+
+# Replace 'hostname' with the actual hostname you want to connect to
+get_ssh_key_info('hostname')
