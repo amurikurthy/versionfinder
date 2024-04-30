@@ -1,26 +1,30 @@
-import paramiko
-import sys
+def get_eol_data(serial_numbers, api_key):
+    """
+    Fetches EoL data for a list of Cisco product serial numbers.
 
-def get_ssh_key_info(hostname, port=22):
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    Args:
+        serial_numbers (list): A list of serial numbers of Cisco products.
+        api_key (str): Your Cisco API key.
 
-    try:
-        client.connect(hostname, port=port, username='username', password='password', look_for_keys=False, allow_agent=False)
-    except Exception as e:
-        print(f"Failed to connect to {hostname}: {str(e)}")
-        return
+    Returns:
+        dict: EoL data for the provided serial numbers.
+    """
+    url = 'https://api.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1'
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
+    }
+    data = {'serialNumbers': serial_numbers}
+    response = requests.post(url, json=data, headers=headers)
 
-    # Retrieve the host key and print information about each available key
-    host_keys = client.get_host_keys()
-    if hostname in host_keys:
-        for key_type, key in host_keys[hostname].items():
-            print(f"Host Key Type: {key.get_name()}")
-            print(f"Key Size: {key.get_bits()} bits")
+    if response.status_code == 200:
+        return response.json()
     else:
-        print("No host key found.")
+        print('Failed to retrieve data:', response.status_code)
+        return {}
 
-    client.close()
-
-# Replace 'hostname' with the actual hostname you want to connect to
-get_ssh_key_info('hostname')
+# Example usage:
+api_key = 'your_cisco_api_key_here'
+serial_numbers = ['serial_number_1', 'serial_number_2']
+eol_data = get_eol_data(serial_numbers, api_key)
+print(eol_data)
