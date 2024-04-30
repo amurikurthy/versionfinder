@@ -1,30 +1,30 @@
-def get_eol_data(serial_numbers, api_key):
+import requests
+
+def fetch_eox_info_by_serial_number(serial_number, api_key):
     """
-    Fetches EoL data for a list of Cisco product serial numbers.
+    Fetches EOX information for a given Cisco product serial number using the Cisco EOX API.
 
     Args:
-        serial_numbers (list): A list of serial numbers of Cisco products.
+        serial_number (str): The serial number of the Cisco product.
         api_key (str): Your Cisco API key.
 
     Returns:
-        dict: EoL data for the provided serial numbers.
+        dict: The EOX information returned by the API.
     """
-    url = 'https://api.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1'
+    url = f"https://apix.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/{serial_number}"
     headers = {
         'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json'
     }
-    data = {'serialNumbers': serial_numbers}
-    response = requests.post(url, json=data, headers=headers)
+    response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
         return response.json()
     else:
-        print('Failed to retrieve data:', response.status_code)
-        return {}
+        return {'error': 'Failed to retrieve EOX data', 'status_code': response.status_code}
 
-# Example usage:
-api_key = 'your_cisco_api_key_here'
-serial_numbers = ['serial_number_1', 'serial_number_2']
-eol_data = get_eol_data(serial_numbers, api_key)
-print(eol_data)
+# Usage example
+api_key = 'your_api_key_here'
+serial_number = 'your_serial_number_here'
+eox_info = fetch_eox_info_by_serial_number(serial_number, api_key)
+print(eox_info)
